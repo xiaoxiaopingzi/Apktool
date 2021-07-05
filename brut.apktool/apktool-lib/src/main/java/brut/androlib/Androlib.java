@@ -31,8 +31,11 @@ import brut.androlib.src.SmaliBuilder;
 import brut.androlib.src.SmaliDecoder;
 import brut.common.BrutException;
 import brut.directory.*;
-import brut.util.BrutIO;
-import brut.util.OS;
+import brut.util.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.jf.dexlib2.iface.DexFile;
+
 import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -42,23 +45,19 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-
 public class Androlib {
     private final AndrolibResources mAndRes = new AndrolibResources();
     protected final ResUnknownFiles mResUnknownFiles = new ResUnknownFiles();
     public ApkOptions apkOptions;
     private int mMinSdkVersion = 0;
 
+    public Androlib() {
+        this(new ApkOptions());
+    }
+
     public Androlib(ApkOptions apkOptions) {
         this.apkOptions = apkOptions;
         mAndRes.apkOptions = apkOptions;
-    }
-
-    public Androlib() {
-        this.apkOptions = new ApkOptions();
-        mAndRes.apkOptions = this.apkOptions;
     }
 
     public ResTable getResTable(ExtFile apkFile)
@@ -71,6 +70,10 @@ public class Androlib {
         return mAndRes.getResTable(apkFile, loadMainPkg);
     }
 
+    public int getMinSdkVersion() {
+        return mMinSdkVersion;
+    }
+
     public void decodeSourcesRaw(ExtFile apkFile, File outDir, String filename)
             throws AndrolibException {
         try {
@@ -81,7 +84,7 @@ public class Androlib {
         }
     }
 
-    public void decodeSourcesSmali(File apkFile, File outDir, String filename, boolean bakdeb, int api)
+    public void decodeSourcesSmali(File apkFile, File outDir, String filename, boolean bakDeb, int apiLevel)
             throws AndrolibException {
         try {
             File smaliDir;
@@ -93,7 +96,11 @@ public class Androlib {
             OS.rmdir(smaliDir);
             smaliDir.mkdirs();
             LOGGER.info("Baksmaling " + filename + "...");
-            SmaliDecoder.decode(apkFile, smaliDir, filename, bakdeb, api);
+            DexFile dexFile = SmaliDecoder.decode(apkFile, smaliDir, filename, bakDeb, apiLevel);
+            int minSdkVersion = dexFile.getOpcodes().api;
+            if (mMinSdkVersion == 0 || mMinSdkVersion > minSdkVersion) {
+                mMinSdkVersion = minSdkVersion;
+            }
         } catch (BrutException ex) {
             throw new AndrolibException(ex);
         }
@@ -193,7 +200,7 @@ public class Androlib {
         return false;
     }
 
-    public void decodeUnknownFiles(ExtFile apkFile, File outDir, ResTable resTable)
+    public void decodeUnknownFiles(ExtFile apkFile, File outDir)
             throws AndrolibException {
         LOGGER.info("Copying unknown files...");
         File unknownOut = new File(outDir, UNK_DIRNAME);
@@ -810,5 +817,5 @@ public class Androlib {
             "lib", "libs", "assets", "META-INF", "kotlin" };
     private final static Pattern NO_COMPRESS_PATTERN = Pattern.compile("(" +
             "jpg|jpeg|png|gif|wav|mp2|mp3|ogg|aac|mpg|mpeg|mid|midi|smf|jet|rtttl|imy|xmf|mp4|" +
-            "m4a|m4v|3gp|3gpp|3g2|3gpp2|amr|awb|wma|wmv|webm|mkv)$");
+            "m4a|m4v|3gp|3gpp|3g2|3gpp2|amr|awb|wma|wmv|webm|webp|mkv)$");
 }
