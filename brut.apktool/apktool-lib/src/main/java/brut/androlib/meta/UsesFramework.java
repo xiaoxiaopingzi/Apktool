@@ -16,9 +16,64 @@
  */
 package brut.androlib.meta;
 
+import brut.yaml.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class UsesFramework {
-    public List<Integer> ids;
-    public String tag;
+public class UsesFramework implements YamlSerializable {
+    private final List<Integer> mIds;
+    private String mTag;
+
+    public UsesFramework() {
+        mIds = new ArrayList<>();
+        clear();
+    }
+
+    public void clear() {
+        mIds.clear();
+        mTag = null;
+    }
+
+    public boolean isEmpty() {
+        return mIds.isEmpty() && mTag == null;
+    }
+
+    @Override
+    public void readItem(YamlReader reader) {
+        YamlLine line = reader.getLine();
+        switch (line.getKey()) {
+            case "ids": {
+                mIds.clear();
+                reader.readIntList(mIds);
+                break;
+            }
+            case "tag": {
+                mTag = line.getValue();
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void write(YamlWriter writer) {
+        if (!mIds.isEmpty()) {
+            writer.writeList("ids", mIds);
+        }
+        if (mTag != null) {
+            writer.writeString("tag", mTag);
+        }
+    }
+
+    public List<Integer> getIds() {
+        return mIds;
+    }
+
+    public String getTag() {
+        return mTag;
+    }
+
+    public void setTag(String tag) {
+        mTag = tag;
+    }
 }

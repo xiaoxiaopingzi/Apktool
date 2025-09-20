@@ -17,13 +17,15 @@
 package brut.directory;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 
 public interface Directory {
+    char separator = '/';
+
     Set<String> getFiles();
 
     Set<String> getFiles(boolean recursive);
@@ -48,30 +50,25 @@ public interface Directory {
 
     void copyToDir(Directory out) throws DirectoryException;
 
-    void copyToDir(Directory out, String[] fileNames)
-        throws DirectoryException;
+    void copyToDir(Directory out, String[] fileNames) throws DirectoryException;
 
-    void copyToDir(Directory out, String fileName)
-        throws DirectoryException;
+    void copyToDir(Directory out, String fileName) throws DirectoryException;
+
+    void copyToDir(String inFileName, Directory out, String outFileName) throws DirectoryException;
 
     void copyToDir(File out) throws DirectoryException;
 
-    void copyToDir(File out, String[] fileNames)
-        throws DirectoryException;
+    void copyToDir(File out, String[] fileNames) throws DirectoryException;
 
-    void copyToDir(File out, String fileName)
-        throws DirectoryException;
+    void copyToDir(File out, String fileName) throws DirectoryException;
 
-    long getSize(String fileName)
-        throws DirectoryException;
+    void copyToDir(String inFileName, File out, String outFileName) throws DirectoryException;
 
-    long getCompressedSize(String fileName)
-        throws DirectoryException;
+    long getSize(String fileName) throws DirectoryException;
 
-    int getCompressionLevel(String fileName)
-        throws DirectoryException;
+    long getCompressedSize(String fileName) throws DirectoryException;
+
+    int getCompressionLevel(String fileName) throws DirectoryException;
 
     void close() throws IOException;
-
-    char separator = '/';
 }

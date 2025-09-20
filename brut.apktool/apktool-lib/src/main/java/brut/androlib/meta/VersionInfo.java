@@ -16,7 +16,63 @@
  */
 package brut.androlib.meta;
 
-public class VersionInfo {
-    public String versionCode;
-    public String versionName;
+import brut.yaml.*;
+
+public class VersionInfo implements YamlSerializable {
+    private String mVersionCode;
+    private String mVersionName;
+
+    public VersionInfo() {
+        clear();
+    }
+
+    public void clear() {
+        mVersionCode = null;
+        mVersionName = null;
+    }
+
+    public boolean isEmpty() {
+        return mVersionCode == null && mVersionName == null;
+    }
+
+    @Override
+    public void readItem(YamlReader reader) {
+        YamlLine line = reader.getLine();
+        switch (line.getKey()) {
+            case "versionCode": {
+                mVersionCode = line.getValue();
+                break;
+            }
+            case "versionName": {
+                mVersionName = line.getValue();
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void write(YamlWriter writer) {
+        if (mVersionCode != null) {
+            writer.writeString("versionCode", mVersionCode);
+        }
+        if (mVersionName != null) {
+            writer.writeString("versionName", mVersionName);
+        }
+    }
+
+    public String getVersionCode() {
+        return mVersionCode;
+    }
+
+    public void setVersionCode(String versionCode) {
+        mVersionCode = versionCode;
+    }
+
+    public String getVersionName() {
+        return mVersionName;
+    }
+
+    public void setVersionName(String versionName) {
+        mVersionName = versionName;
+    }
 }
